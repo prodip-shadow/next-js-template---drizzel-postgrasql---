@@ -1,0 +1,81 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "d88d0d9d-54b8-4d2c-8aed-b2748f413e35",
+  "prevIds": [
+    "fdc85e30-2d4d-4a45-ab24-22ee2564bc90"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "users",
+        "avatar_public_id"
+      ],
+      "writes": [
+        "s|col|public.users.avatar_public_id",
+        "n|col|public.users.avatar_public_id",
+        "e|col|public.users.avatar_public_id"
+      ],
+      "reads": [
+        "n|tbl|public.users",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "users",
+        "avatar_provider"
+      ],
+      "writes": [
+        "s|col|public.users.avatar_provider",
+        "n|col|public.users.avatar_provider",
+        "e|col|public.users.avatar_provider"
+      ],
+      "reads": [
+        "n|tbl|public.users",
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "users",
+        "name": "avatar_public_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "users",
+        "name": "avatar_provider",
+        "type": "varchar(24)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}
