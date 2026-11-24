@@ -8,7 +8,7 @@ Architectural and development guide for **scout-website**. Follow this structure
 
 - **Framework:** Next.js (App Router)
 - **Language:** JavaScript (ES6+) and JSX only (`.js`, `.jsx`)
-- **UI:** React, Tailwind CSS, **shadcn/ui**
+- **UI:** React, Tailwind CSS v4, **shadcn/ui** (`base-mira` style on `@base-ui/react`, `lucide-react` icons, `rtl: true` in `components.json`)
 - **Database:** Drizzle ORM + Neon PostgreSQL
 - **Validation:** Zod
 - **Path Alias:** `@/*` maps to `./src/*`
@@ -21,18 +21,29 @@ Do not introduce TypeScript (`.ts`, `.tsx`, `interface`, or `type` declarations)
 
 ```text
 scout-website/
+├── components.json              # shadcn/ui configuration (base-mira, rtl: true, tsx: false)
 ├── drizzle/
 │   └── migrations/              # Drizzle Kit generated SQL migrations
 ├── public/                      # Static assets
 └── src/
     ├── app/                     # Next.js App Router (routes, layouts, boundaries)
-    │   ├── (auth)/              # Authentication pages (login, sign-up)
+    │   ├── (auth)/              # Authentication pages
+    │   │   ├── login/
+    │   │   │   └── page.jsx
+    │   │   └── sign-up/
+    │   │       └── page.jsx
     │   ├── (common)/            # Public/common pages & layout (page.jsx serves /)
-    │   ├── (dashboard)/         # Dashboard pages and layout
+    │   │   ├── layout.jsx
+    │   │   └── page.jsx
+    │   ├── (dashboard)/         # Dashboard pages & layout
+    │   │   ├── dashboard/
+    │   │   └── layout.jsx
+    │   ├── favicon.ico
     │   ├── globals.css
-    │   └── layout.jsx           # Root layout (no root app/page.jsx)
+    │   ├── layout.jsx           # Root layout
+    │   └── page.jsx             # Unused root page ((common)/page.jsx serves /)
     ├── components/              # Reusable & feature UI components
-    │   ├── ui/                  # shadcn/ui components & base UI primitives
+    │   ├── ui/                  # shadcn/ui components & base UI primitives (e.g., button.jsx)
     │   ├── shared/              # Components shared across multiple features
     │   └── <feature>/           # Feature-specific components (when needed)
     ├── db/                      # Database connection & Drizzle schemas
@@ -41,6 +52,7 @@ scout-website/
     │       ├── index.js         # Re-exports all table schemas and relations
     │       └── <entity>.js      # Individual table definitions
     ├── lib/                     # Shared utilities, constants, generic helpers
+    │   └── utils.js             # shadcn/ui cn() class-merging helper
     ├── modules/                 # Feature-based business logic (4-layer architecture)
     │   └── <feature>/
     │       ├── <feature>.validation.js
@@ -65,9 +77,10 @@ scout-website/
 - Do not add API route handlers unless an external webhook or HTTP consumer explicitly requires an HTTP endpoint.
 
 ### `src/components/` (UI Components)
-- `ui/` — **shadcn/ui** components and base reusable UI primitives (use these by default for UI building blocks).
+- `ui/` — **shadcn/ui** components (`base-mira` style built on `@base-ui/react`, configured in `components.json` with `tsx: false`, `rtl: true`, and `lucide-react` icons). Use these by default for UI building blocks and `lucide-react` for icons.
 - `shared/` — Components shared across multiple features or layouts.
 - `<feature>/` — Components specific to a single feature.
+- Respect `rtl: true` by preferring Tailwind logical properties (`ms-`, `me-`, `ps-`, `pe-`, `start-`, `end-`) over physical left/right utilities where direction matters.
 - Use **Server Components by default**. Add `"use client"` only when client interactivity, browser APIs, or React client hooks are required.
 - Never import database modules, repositories, or server-only integrations into Client Components.
 
@@ -89,7 +102,7 @@ scout-website/
 - Use `import "server-only";` in modules containing private keys or server-only SDKs.
 
 ### `src/lib/` (Shared Utilities)
-- General-purpose helpers, constants, formatters, and shared utilities used across the app.
+- General-purpose helpers, constants, formatters, and shared utilities used across the app (including `src/lib/utils.js` for `cn()`).
 - Do not put feature-specific business logic or database queries here.
 
 ---
