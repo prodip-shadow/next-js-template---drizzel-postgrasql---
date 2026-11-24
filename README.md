@@ -70,7 +70,19 @@ Profile management, avatar upload, password confirmation gate, 2FA setup, appear
 
 Follow these steps to run the template locally:
 
-### 1. Clone & Install Dependencies
+### 1. Create Your Project & Install Dependencies
+
+#### Option A: Use this Template (Recommended)
+
+1. Click **"Use this template"** → **"Create a new repository"** at the top of this GitHub repository.
+2. Enter your **Repository name** and click **Create repository** — GitHub will automatically generate your new repo with this entire template.
+3. Open your project locally and install dependencies:
+
+```bash
+bun install
+```
+
+#### Option B: Clone Directly
 
 ```bash
 git clone <your-repo-url> template
