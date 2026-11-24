@@ -41,7 +41,7 @@ export async function registerAction(input) {
       await setSessionCookie(result.sessionToken, result.expiresAt);
     }
 
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return successResponse({
       user: result.user,
       requiresEmailVerification: result.requiresEmailVerification,
@@ -61,7 +61,7 @@ export async function loginAction(input) {
     }
 
     await setSessionCookie(result.sessionToken, result.expiresAt);
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return successResponse({
       requiresTwoFactor: false,
       user: result.user,
@@ -77,7 +77,7 @@ export async function logoutAction() {
     const rawToken = cookieStore.get(AUTH_CONFIG.sessionCookieName)?.value;
     await logoutService(rawToken);
     await clearSessionCookie();
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return successResponse({ loggedOut: true });
   } catch (error) {
     return errorResponse(error);

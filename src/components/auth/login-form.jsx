@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { flushSync } from "react-dom";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 import { PasswordInput } from "@/components/auth/password-input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -17,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { loginAction } from "@/modules/auth/auth.actions";
 
-export function LoginForm() {
+function LoginFormContent({ onReset }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
@@ -48,8 +49,10 @@ export function LoginForm() {
         return;
       }
 
+      flushSync(() => {
+        onReset();
+      });
       router.push("/dashboard");
-      router.refresh();
     });
   }
 
@@ -129,4 +132,34 @@ export function LoginForm() {
       </p>
     </form>
   );
+}
+
+export function LoginForm() {
+  const pathname = usePathname();
+  const [formKey, setFormKey] = useState(0);
+
+  function resetForm() {
+    setFormKey((prev) => prev + 1);
+  }
+
+  useEffect(() => {
+    if (pathname !== "/login") {
+      const id = setTimeout(resetForm, 0);
+      return () => clearTimeout(id);
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    function handlePageShow(event) {
+      if (event.persisted) {
+        resetForm();
+      }
+    }
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
+
+  return <LoginFormContent key={formKey} onReset={resetForm} />;
 }

@@ -28,9 +28,7 @@ export async function sendEmail({ to, subject, html, text }) {
 
   if (!apiKey) {
     logger.info("Email skipped (RESEND_API_KEY not configured)", {
-      to,
       subject,
-      preview: text || subject,
     });
     return { delivered: false, provider: "console" };
   }
@@ -46,7 +44,7 @@ export async function sendEmail({ to, subject, html, text }) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    logger.error("Email delivery failed", { to, subject, status: response.status, errorText });
+    logger.error("Email delivery failed", { subject, status: response.status, errorText });
     throw new Error("Unable to send email.");
   }
 

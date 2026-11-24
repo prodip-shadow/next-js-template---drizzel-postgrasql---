@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { flushSync } from "react-dom";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 import { PasswordInput } from "@/components/auth/password-input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -13,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { registerAction } from "@/modules/auth/auth.actions";
 
-export function SignUpForm() {
+function SignUpFormContent({ onReset }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
@@ -42,12 +43,16 @@ export function SignUpForm() {
       }
 
       if (res.data?.requiresEmailVerification) {
+        setPassword("");
+        setPasswordConfirmation("");
         setVerificationNotice(true);
         return;
       }
 
+      flushSync(() => {
+        onReset();
+      });
       router.push("/dashboard");
-      router.refresh();
     });
   }
 
@@ -154,4 +159,34 @@ export function SignUpForm() {
       </p>
     </form>
   );
+}
+
+export function SignUpForm() {
+  const pathname = usePathname();
+  const [formKey, setFormKey] = useState(0);
+
+  function resetForm() {
+    setFormKey((prev) => prev + 1);
+  }
+
+  useEffect(() => {
+    if (pathname !== "/sign-up") {
+      const id = setTimeout(resetForm, 0);
+      return () => clearTimeout(id);
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    function handlePageShow(event) {
+      if (event.persisted) {
+        resetForm();
+      }
+    }
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
+
+  return <SignUpFormContent key={formKey} onReset={resetForm} />;
 }

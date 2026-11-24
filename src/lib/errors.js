@@ -47,6 +47,6 @@ export function getSafeErrorMessage(error) {
     return error.message;
   }
 
-  console.error("[ServerError]", error);
+  console.error("[ServerError]", error?.message || "Unknown server error");
   return "Something went wrong. Please try again.";
 }

@@ -57,7 +57,6 @@ export function DashboardUserMenu({ user, onNavigate }) {
     startTransition(async () => {
       await logoutAction();
       router.push("/");
-      router.refresh();
     });
   }
 

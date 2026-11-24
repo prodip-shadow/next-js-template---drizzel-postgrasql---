@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { Check, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { PasswordInput } from "@/components/auth/password-input";
@@ -36,6 +36,7 @@ export function SecuritySettingsForm() {
   const { user, isPasswordConfirmed } = useDashboard();
   const twoFactorEnabled = Boolean(user?.twoFactorEnabled);
   const router = useRouter();
+  const pathname = usePathname();
   const [confirmed, setConfirmed] = useState(Boolean(isPasswordConfirmed));
   const [gatePassword, setGatePassword] = useState("");
   const [gateError, setGateError] = useState("");
@@ -57,6 +58,47 @@ export function SecuritySettingsForm() {
   const [disablePass, setDisablePass] = useState("");
   const [twoFaError, setTwoFaError] = useState("");
   const [copiedSecret, setCopiedSecret] = useState(false);
+
+  useEffect(() => {
+    if (pathname !== "/dashboard/settings/security") {
+      const id = setTimeout(() => {
+        setGatePassword("");
+        setGateError("");
+        setCurrentPassword("");
+        setPassword("");
+        setPasswordConfirmation("");
+        setPassError("");
+        setTotpCode("");
+        setDisablePass("");
+        setTwoFaSecret("");
+        setTwoFaOtpUrl("");
+        setTwoFaError("");
+        setTwoFaStep("idle");
+      }, 0);
+      return () => clearTimeout(id);
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    function resetAllSecurityForms() {
+      setGatePassword("");
+      setGateError("");
+      setCurrentPassword("");
+      setPassword("");
+      setPasswordConfirmation("");
+      setPassError("");
+      setTotpCode("");
+      setDisablePass("");
+      setTwoFaSecret("");
+      setTwoFaOtpUrl("");
+      setTwoFaError("");
+      setTwoFaStep("idle");
+    }
+    window.addEventListener("pagehide", resetAllSecurityForms);
+    return () => {
+      window.removeEventListener("pagehide", resetAllSecurityForms);
+    };
+  }, []);
 
   function handleConfirmAccess(e) {
     e.preventDefault();
@@ -125,6 +167,8 @@ export function SecuritySettingsForm() {
       }
 
       setRecoveryCodes(res.data?.recoveryCodes || []);
+      setTwoFaSecret("");
+      setTwoFaOtpUrl("");
       setTotpCode("");
       setTwoFaStep("recovery");
       toast.success("Two-factor authentication enabled.");

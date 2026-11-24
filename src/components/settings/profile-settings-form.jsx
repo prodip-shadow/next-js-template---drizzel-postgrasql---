@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Camera } from "lucide-react";
 import { toast } from "sonner";
@@ -47,6 +47,20 @@ export function ProfileSettingsForm() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteError, setDeleteError] = useState("");
+
+  useEffect(() => {
+    function resetErrorsAndSensitive() {
+      setDeletePassword("");
+      setDeleteError("");
+      setProfileError("");
+      setAvatarError("");
+    }
+    window.addEventListener("pagehide", resetErrorsAndSensitive);
+    return () => {
+      window.removeEventListener("pagehide", resetErrorsAndSensitive);
+      resetErrorsAndSensitive();
+    };
+  }, []);
 
   function handleProfileSubmit(e) {
     e.preventDefault();
@@ -112,6 +126,8 @@ export function ProfileSettingsForm() {
         return;
       }
 
+      setDeletePassword("");
+      setDeleteError("");
       setDeleteDialogOpen(false);
       router.push("/");
       router.refresh();

@@ -1,13 +1,23 @@
 const SENSITIVE_KEYS = new Set([
   "password",
-  "passwordHash",
-  "currentPassword",
-  "newPassword",
+  "passwordhash",
+  "passwordconfirmation",
+  "currentpassword",
+  "newpassword",
   "token",
-  "tokenHash",
+  "tokenhash",
+  "sessiontoken",
   "secret",
-  "twoFactorSecret",
-  "twoFactorRecoveryCodes",
+  "key",
+  "apikey",
+  "apisecret",
+  "privatekey",
+  "twofactorsecret",
+  "twofactorrecoverycodes",
+  "totpcode",
+  "recoverycode",
+  "otpauthurl",
+  "email",
   "authorization",
   "cookie",
 ]);
@@ -18,7 +28,7 @@ function sanitizeMeta(meta) {
 
   const sanitized = {};
   for (const [key, value] of Object.entries(meta)) {
-    if (SENSITIVE_KEYS.has(key)) {
+    if (SENSITIVE_KEYS.has(key.toLowerCase())) {
       sanitized[key] = "[REDACTED]";
     } else if (value && typeof value === "object") {
       sanitized[key] = sanitizeMeta(value);

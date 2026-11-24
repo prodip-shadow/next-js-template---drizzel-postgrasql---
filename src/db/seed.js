@@ -12,7 +12,7 @@ async function seed() {
     .limit(1);
 
   if (existingUser) {
-    console.log(`Seed skipped: ${demoEmail} already exists (id=${existingUser.id}).`);
+    console.log(`Seed skipped: demo user already exists (id=${existingUser.id}).`);
     return;
   }
 
@@ -28,7 +28,7 @@ async function seed() {
     message: "Your demo account has been seeded successfully.",
   });
 
-  console.log(`Seeded demo user: ${user.email} (id=${user.id})`);
+  console.log(`Seeded demo user (id=${user.id}).`);
 }
 
 seed()
