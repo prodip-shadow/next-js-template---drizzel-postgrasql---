@@ -1,7 +1,7 @@
 <div align="center">
 
 <a href="https://nextjs.org">
-  <img src="https://i.ibb.co.com/cXpbr7vp/nextdotjs-wordmark-light.jpg" alt="Next.js Logo" height="64" />
+  <img src="https://i.ibb.co.com/ynNr6Zph/2026-11-24-191308-hyprshot.png" alt="Next.js Template Logo" height="72" />
 </a>
 
 # Next.js Template
@@ -21,14 +21,12 @@ A clean, production-ready **Next.js 16 (App Router)** full-stack starter templat
 ## Table of Contents
 
 - [Screenshots](#-screenshots)
-- [Key Features](#-key-features)
 - [Tech Stack](#-tech-stack)
 - [Getting Started (Step-by-Step)](#-getting-started-step-by-step)
 - [Environment Variables](#-environment-variables)
 - [Project Structure](#-project-structure)
-- [4-Layer Module Architecture](#-4-layer-module-architecture)
-- [Authentication & 2FA Guide](#-authentication--2fa-guide)
-- [UI & Component Conventions](#-ui--component-conventions)
+- [Built-in Functionalities & How to Use Them](#-built-in-functionalities--how-to-use-them)
+- [How to Start Coding (Developer Guide)](#-how-to-start-coding-developer-guide)
 - [Available Scripts](#-available-scripts)
 - [Deployment](#-deployment)
 
@@ -42,7 +40,7 @@ Public landing page with sticky navbar, theme toggle, hero section, and ecosyste
 ![Homepage](https://i.ibb.co.com/ns50wDBS/2026-11-24-185927-hyprshot.png)
 
 ### 2. Dashboard Page
-Authenticated dashboard with collapsible sidebar (`SidebarProvider`), user dropdown menu, and theme switcher.
+Authenticated dashboard with collapsible sidebar, user dropdown menu, and theme switcher.
 
 ![Dashboard Page](https://i.ibb.co.com/hJtT5VwT/2026-11-24-190120-hyprshot.png)
 
@@ -53,87 +51,83 @@ Profile management, avatar upload, password confirmation gate, 2FA setup, appear
 
 ---
 
-## Key Features
-
-- **Authentication & Sessions**
-  - Sign up, login, logout, and secure `HttpOnly` session cookies (`7 days` default).
-  - Built-in rate limiting on login attempts ([`src/lib/config.js`](src/lib/config.js)).
-  - Optional email verification toggle (`AUTH_CONFIG.requireEmailVerification`).
-- **Two-Factor Authentication (2FA)**
-  - RFC 6238 **TOTP** implementation using Node.js `crypto` (works offline with Google Authenticator, Authy, Microsoft Authenticator, 1Password, etc.).
-  - 8 one-time hashed recovery codes generated on enable.
-  - Password confirmation gate before accessing sensitive security settings.
-- **User & Account Settings**
-  - Update name & email, upload/remove profile photo (Cloudinary or local `public/uploads` fallback).
-  - Change password and delete account with confirmation dialog.
-  - Persistent theme preference (`Light`, `Dark`, `System`) synced with `next-themes`.
-- **Clean 4-Layer Architecture (Non-REST)**
-  - Uses React Server Actions instead of boilerplate REST routes:
-    `Validation (Zod) -> Repository (Drizzle) -> Service (Business Logic) -> Server Actions`.
-- **Modern UI with shadcn/ui**
-  - Built with `base-mira` style (`@base-ui/react`), `lucide-react` icons, `sonner` toasts, `<Spinner />` action loaders, `<Skeleton />` route placeholders, and `rtl: true` logical CSS properties.
-
----
-
 ## Tech Stack
 
 | Layer | Technology |
 | :--- | :--- |
 | **Framework** | Next.js 16 (App Router, Turbopack, React Compiler, `cacheComponents`) |
-| **Language** | JavaScript (ES6+) & JSX (`.js`, `.jsx`) |
+| **Language** | JavaScript (ES6+) & JSX (`.js`, `.jsx` — no TypeScript) |
 | **UI & Styling** | React 19, Tailwind CSS v4, shadcn/ui (`base-mira` / `@base-ui/react`), `lucide-react` |
 | **Database** | Neon PostgreSQL + Drizzle ORM |
 | **Validation** | Zod |
-| **Email** | Resend HTTP API (falls back to console log in dev if key is omitted) |
-| **Media Storage** | Cloudinary (falls back to local `public/uploads/` if keys are omitted) |
+| **Email** | Resend HTTP API (safe console fallback when API key is omitted) |
+| **Media Storage** | Cloudinary (automatic local `public/uploads/` fallback when keys are omitted) |
 | **Package Manager** | Bun (compatible with npm/pnpm/yarn) |
 
 ---
 
 ## Getting Started (Step-by-Step)
 
-Follow these steps to run the project locally:
+Click each step below to expand and follow along:
 
-### Step 1: Clone the Repository
-```bash
-git clone <your-repo-url>
-cd scout-website
-```
+<details>
+<summary><strong>Step 1: Clone the repository & install dependencies</strong></summary>
 
-### Step 2: Install Dependencies
 ```bash
+git clone <your-repo-url> template
+cd template
 bun install
 ```
 
-### Step 3: Configure Environment Variables
-Copy `.env.example` to `.env` and fill in your Neon PostgreSQL URLs and app name:
+</details>
+
+<details>
+<summary><strong>Step 2: Configure your environment variables (.env)</strong></summary>
+
+Copy `.env.example` to `.env`:
+
 ```bash
 cp .env.example .env
 ```
 
-### Step 4: Push Database Schema
-Push the Drizzle schema (`users`, `notifications`, etc.) to your Neon PostgreSQL database:
+Fill in at least `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_URL`, `DATABASE_URL`, and `DATABASE_URL_POOLED` (from your Neon PostgreSQL dashboard).
+
+</details>
+
+<details>
+<summary><strong>Step 3: Push database schema & seed demo user</strong></summary>
+
+Push the Drizzle schema to your PostgreSQL database:
+
 ```bash
 bun run db:push
 ```
 
-### Step 5: (Optional) Seed Demo Data
-Create a demo user (`test1@gmail.com` / `password`) to test login right away:
+*(Optional)* Seed a demo account (`test1@gmail.com` / `password`) to test login immediately:
+
 ```bash
 bun run db:seed
 ```
 
-### Step 6: Start the Development Server
+</details>
+
+<details>
+<summary><strong>Step 4: Run the development server</strong></summary>
+
 ```bash
 bun run dev
 ```
+
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+</details>
 
 ---
 
 ## Environment Variables
 
-All supported variables are listed in [`.env.example`](.env.example).
+<details>
+<summary><strong>Click to view all .env variables and what they do</strong></summary>
 
 | Variable | Required | Description |
 | :--- | :---: | :--- |
@@ -142,18 +136,20 @@ All supported variables are listed in [`.env.example`](.env.example).
 | `DATABASE_URL` | Yes | Direct Neon PostgreSQL connection string (used by Drizzle Kit). |
 | `DATABASE_URL_POOLED` | Yes | Pooled Neon PostgreSQL connection string (used by Drizzle ORM at runtime). |
 | `RESEND_API_KEY` | No | Resend API key for sending emails. If omitted, emails are skipped safely. |
-| `EMAIL_FROM` | No | Sender address (e.g. `My App <noreply@yourdomain.com>`). |
+| `EMAIL_FROM` | No | Sender address (e.g. `Template <noreply@yourdomain.com>`). |
 | `CLOUDINARY_CLOUD_NAME` | No | Cloudinary cloud name. If omitted, uploads save locally to `public/uploads/`. |
 | `CLOUDINARY_API_KEY` | No | Cloudinary API key. |
 | `CLOUDINARY_API_SECRET` | No | Cloudinary API secret. |
-| `CLOUDINARY_FOLDER` | No | Folder prefix in Cloudinary (e.g. `my-app`). |
+| `CLOUDINARY_FOLDER` | No | Folder prefix in Cloudinary (e.g. `template`). |
+
+</details>
 
 ---
 
 ## Project Structure
 
 <details>
-<summary>Click to expand full directory structure</summary>
+<summary><strong>Click to expand full directory structure</strong></summary>
 
 ```text
 ├── components.json              # shadcn/ui config (base-mira, rtl: true, tsx: false)
@@ -201,64 +197,141 @@ All supported variables are listed in [`.env.example`](.env.example).
 
 ---
 
-## 4-Layer Module Architecture
+## Built-in Functionalities & How to Use Them
 
-Every business feature in `src/modules/<feature>/` follows a strict 4-layer separation:
-
-1. **`<feature>.validation.js`** — Pure Zod schemas for input validation.
-2. **`<feature>.repository.js`** — Pure Drizzle ORM queries (`select`, `insert`, `update`, `delete`). No auth or business logic.
-3. **`<feature>.service.js`** — Core business rules, Zod parsing, ownership/role checks, and coordination with `src/services/`.
-4. **`<feature>.actions.js`** — `"use server";` entry points called by Client Components. Resolves server-side session identity, invokes the Service, revalidates paths, and returns `{ success, data }` or `{ success, message }`.
-
-### Data Flow
-- **Write:** `Client Component -> Server Action -> Service -> Validation + Repository -> Database`
-- **Read:** `Server Component -> Service -> Repository -> Database`
+Expand any section below to understand what is already built and how to use or customize it:
 
 <details>
-<summary>How to add a new feature module (Example)</summary>
+<summary><strong>1. Authentication & Session Guard</strong></summary>
 
-1. Create a schema in `src/db/schema/posts.js` and export it in `src/db/schema/index.js`.
-2. Push schema changes with `bun run db:push`.
-3. Create `src/modules/posts/`:
-   - `posts.validation.js` (Zod schemas)
-   - `posts.repository.js` (Drizzle queries)
-   - `posts.service.js` (validation + ownership checks)
-   - `posts.actions.js` (`"use server"` actions calling `requireAuth()` + service)
-4. Build your UI in `src/app/(dashboard)/dashboard/posts/page.jsx` using shadcn/ui components.
+- **What it does:** Handles registration, login, logout, password reset, and `HttpOnly` cookie sessions (`7 days` by default).
+- **Where it lives:** `src/modules/auth/`, `src/lib/auth-guard.js`, `src/app/(auth)/`.
+- **How to use it in your own pages/actions:**
+  - In a **Server Component**, call `const user = await getCurrentUser()` or `await getCurrentSession()` from `@/lib/auth-guard`.
+  - In a **Server Action**, call `const user = await requireAuth()` from `@/lib/auth-guard` to get the authenticated user's ID safely (never trust client-sent `userId`).
+
+</details>
+
+<details>
+<summary><strong>2. Two-Factor Authentication (TOTP 2FA) & Recovery Codes</strong></summary>
+
+- **What it does:** Uses RFC 6238 TOTP (`src/lib/crypto.js`) so users can enable 2FA with Google Authenticator, Authy, Microsoft Authenticator, etc. Works completely offline on the phone once the setup key is added.
+- **Where it lives:** `src/lib/crypto.js`, `src/modules/auth/auth.service.js`, `src/components/settings/security-settings-form.jsx`.
+- **How to use it:**
+  - Go to **Dashboard → Settings → Security** (`/dashboard/settings/security`).
+  - Confirm your password in the security dialog.
+  - Click **Enable 2FA**, copy the setup key into your authenticator app, enter the 6-digit code, and save the 8 backup recovery codes.
+  - Disabling and re-enabling 2FA automatically generates a fresh secret key.
+
+</details>
+
+<details>
+<summary><strong>3. Email Verification & Resend Integration</strong></summary>
+
+- **What it does:** Sends transactional emails (verification, password reset) via Resend. If `RESEND_API_KEY` is not set, it safely skips delivery without crashing.
+- **Where it lives:** `src/services/email/email.js`, `src/lib/config.js`.
+- **How to configure:**
+  - Toggle `AUTH_CONFIG.requireEmailVerification` (`true` / `false`) in `src/lib/config.js`.
+  - Add `RESEND_API_KEY` and `EMAIL_FROM` in `.env` when ready to send real emails.
+  - Call `sendEmail({ to, subject, html, text })` from `@/services/email/email` in any service.
+
+</details>
+
+<details>
+<summary><strong>4. Profile Photo & File Storage (Cloudinary + Local Fallback)</strong></summary>
+
+- **What it does:** Validates file type/size (`JPG`, `PNG`, `WebP`, max `2MB`) and uploads images to Cloudinary when credentials exist, or falls back to `public/uploads/` locally.
+- **Where it lives:** `src/services/storage/storage.js`, `src/lib/config.js` (`STORAGE_CONFIG`).
+- **How to use:**
+  - Configure `CLOUDINARY_*` in `.env` for cloud storage, or leave empty for local uploads during development.
+  - Use `uploadImageFile(file, folder)` and `deleteStoredFile(url)` from `@/services/storage/storage` inside your service layer.
+
+</details>
+
+<details>
+<summary><strong>5. User Settings (Profile, Security, Appearance, Delete Account)</strong></summary>
+
+- **What it does:** Complete account management — update name/email, upload/remove avatar, change password, manage 2FA, switch theme (`Light` / `Dark` / `System`), and permanently delete account.
+- **Where it lives:** `src/app/(dashboard)/dashboard/settings/`, `src/components/settings/`, `src/modules/users/`.
+
+</details>
+
+<details>
+<summary><strong>6. Rate Limiting, Safe Errors & Redacted Logging</strong></summary>
+
+- **Rate Limiting:** Configured in `RATE_LIMIT_CONFIG` (`src/lib/config.js` — `5` login attempts per `15 minutes`).
+- **Safe Error Handling:** `getSafeErrorMessage(error)` in `src/lib/errors.js` converts Zod and App errors into safe client messages without leaking SQL or stack traces.
+- **Logger:** `logger` in `src/lib/logger.js` automatically redacts sensitive fields (`password`, `token`, `secret`, `email`, `apiKey`, etc.) before printing JSON logs.
+
+</details>
+
+<details>
+<summary><strong>7. Notifications Module (Ready-to-Use Example)</strong></summary>
+
+- **What it does:** A complete 4-layer module (`src/modules/notifications/`) + Drizzle schema (`src/db/schema/notifications.js`) ready for creating, listing, and marking user notifications as read.
 
 </details>
 
 ---
 
-## Authentication & 2FA Guide
+## How to Start Coding (Developer Guide)
 
-- **Email Verification:** Controlled by `AUTH_CONFIG.requireEmailVerification` in [`src/lib/config.js`](src/lib/config.js). Set to `true` to require email verification before login (requires `RESEND_API_KEY` for real emails).
-- **Enabling 2FA:**
-  1. Go to **Dashboard → Settings → Security** (`/dashboard/settings/security`).
-  2. Confirm your current password in the security dialog.
-  3. Click **Enable 2FA** to generate your **Authenticator setup key**.
-  4. Copy the key into any TOTP app (Google Authenticator, Authy, Microsoft Authenticator, etc.).
-  5. Enter the 6-digit code shown in your app and click **Verify & Enable**.
-  6. Save the **8 recovery codes** in a safe place.
-- **Disabling & Re-enabling 2FA:** Disabling 2FA clears the old secret. Re-enabling later generates a fresh setup key.
+Follow these expandable guides to start building your own features cleanly inside this template:
 
----
+<details>
+<summary><strong>Where to start customizing first</strong></summary>
 
-## UI & Component Conventions
+1. **App Name & Branding:** Set `NEXT_PUBLIC_APP_NAME` in `.env`, and replace the logo images in `public/logo/` (`nextjs-icon.png` and `nextjs-icon-white.png`).
+2. **Homepage:** Edit `src/app/(common)/page.jsx` for your landing page, and `src/components/shared/navbar.jsx` / `footer.jsx` for navigation links.
+3. **Dashboard Home:** Edit `src/app/(dashboard)/dashboard/page.jsx` to replace the placeholder cards with your real widgets.
+4. **Sidebar Links:** Add your new dashboard routes to `PLATFORM_NAV` in `src/components/dashboard/dashboard-shell.jsx`.
 
-- **shadcn/ui (`base-mira`):** Add new components anytime using:
+</details>
+
+<details>
+<summary><strong>How to add a new feature (Step-by-Step 4-Layer Guide)</strong></summary>
+
+This template uses a **4-layer function-call architecture** (no REST API routes needed for internal app features):
+
+`Client Component -> Server Action -> Service -> Validation (Zod) + Repository (Drizzle) -> Database`
+
+1. **Database Schema (`src/db/schema/<feature>.js`):**
+   - Define your Drizzle table and export it from `src/db/schema/index.js`.
+   - Run `bun run db:push` to sync with Neon PostgreSQL.
+2. **Validation (`src/modules/<feature>/<feature>.validation.js`):**
+   - Write pure Zod schemas (e.g., `createPostSchema`, `postIdSchema`).
+3. **Repository (`src/modules/<feature>/<feature>.repository.js`):**
+   - Write pure Drizzle queries using `db` from `@/db/drizzle`. Never put auth or business rules here.
+4. **Service (`src/modules/<feature>/<feature>.service.js`):**
+   - Parse inputs with Zod, enforce ownership/permission checks, and call the repository.
+5. **Server Actions (`src/modules/<feature>/<feature>.actions.js`):**
+   - Start with `"use server";`, resolve the user with `await requireAuth()`, call the service, run `revalidatePath(...)`, and return `successResponse(data)` / `errorResponse(error)`.
+6. **UI Page (`src/app/(dashboard)/dashboard/<feature>/page.jsx`):**
+   - Read data in a Server Component via the Service, and handle mutations from Client Components via Server Actions.
+
+</details>
+
+<details>
+<summary><strong>How to add shadcn/ui components & loading states</strong></summary>
+
+- **Install any shadcn/ui component:**
   ```bash
   bunx shadcn@latest add <component-name>
   ```
-- **Loading States:**
-  - Use `<Spinner />` ([`src/components/ui/spinner.jsx`](src/components/ui/spinner.jsx)) inside buttons and action triggers instead of plain `"Loading..."` text.
-  - Use `<Skeleton />` ([`src/components/ui/skeleton.jsx`](src/components/ui/skeleton.jsx)) for card and page-level `loading.jsx` states.
-- **RTL Ready:** Configured with `rtl: true` in `components.json` — prefer Tailwind logical properties (`ps-`, `pe-`, `ms-`, `me-`, `start-`, `end-`).
-- **Form Reset:** Auth and security forms automatically reset their state on successful submission and navigation.
+- **Loading States Convention:**
+  - Inside buttons and action triggers, use `<Spinner />` (`@/components/ui/spinner`) instead of plain `"Loading..."` text.
+  - For page/card placeholders (`loading.jsx` or `<Suspense>` fallbacks), use `<Skeleton />` (`@/components/ui/skeleton`).
+- **Forms:** Wrap auth/multi-step forms cleanly so inputs and state reset on submission and navigation.
+- **RTL Support:** `components.json` has `rtl: true` — use Tailwind logical properties (`ps-`, `pe-`, `ms-`, `me-`, `start-`, `end-`) instead of `pl-`, `pr-`, `ml-`, `mr-`.
+
+</details>
 
 ---
 
 ## Available Scripts
+
+<details>
+<summary><strong>Click to view all npm/bun scripts</strong></summary>
 
 | Command | Description |
 | :--- | :--- |
@@ -273,12 +346,17 @@ Every business feature in `src/modules/<feature>/` follows a strict 4-layer sepa
 | `bun run db:seed` | Seed a demo user (`test1@gmail.com`) |
 | `bun run db:test` | Test the PostgreSQL database connection |
 
+</details>
+
 ---
 
 ## Deployment
 
-1. Set all required environment variables (`NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_URL`, `DATABASE_URL`, `DATABASE_URL_POOLED`, and optionally `RESEND_API_KEY` + `CLOUDINARY_*`) in your hosting provider (e.g., **Vercel**).
-2. Run database migrations/push against your production Neon database:
+<details>
+<summary><strong>Click to view deployment steps (Vercel / Node.js)</strong></summary>
+
+1. Add your environment variables (`NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_URL`, `DATABASE_URL`, `DATABASE_URL_POOLED`, and optional `RESEND_API_KEY` / `CLOUDINARY_*`) in your hosting provider (e.g., **Vercel**).
+2. Push your schema to your production Neon database:
    ```bash
    bun run db:push
    ```
@@ -286,3 +364,5 @@ Every business feature in `src/modules/<feature>/` follows a strict 4-layer sepa
    ```bash
    bun run build && bun run start
    ```
+
+</details>
