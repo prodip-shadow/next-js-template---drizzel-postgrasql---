@@ -22,7 +22,7 @@ A clean, production-ready **Next.js 16 (App Router)** full-stack starter templat
 
 - [Screenshots](#-screenshots)
 - [Tech Stack](#-tech-stack)
-- [Getting Started (Step-by-Step)](#-getting-started-step-by-step)
+- [Getting Started](#-getting-started)
 - [Environment Variables](#-environment-variables)
 - [Project Structure](#-project-structure)
 - [Built-in Functionalities & How to Use Them](#-built-in-functionalities--how-to-use-them)
@@ -66,12 +66,11 @@ Profile management, avatar upload, password confirmation gate, 2FA setup, appear
 
 ---
 
-## Getting Started (Step-by-Step)
+## Getting Started
 
-Click each step below to expand and follow along:
+Follow these steps to run the template locally:
 
-<details>
-<summary><strong>Step 1: Clone the repository & install dependencies</strong></summary>
+### 1. Clone & Install Dependencies
 
 ```bash
 git clone <your-repo-url> template
@@ -79,40 +78,25 @@ cd template
 bun install
 ```
 
-</details>
-
-<details>
-<summary><strong>Step 2: Configure your environment variables (.env)</strong></summary>
-
-Copy `.env.example` to `.env`:
+### 2. Configure Environment Variables
 
 ```bash
 cp .env.example .env
 ```
 
-Fill in at least `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_URL`, `DATABASE_URL`, and `DATABASE_URL_POOLED` (from your Neon PostgreSQL dashboard).
+Open `.env` and fill in your **Neon PostgreSQL** connection strings (`DATABASE_URL` and `DATABASE_URL_POOLED`) along with `NEXT_PUBLIC_APP_NAME` and `NEXT_PUBLIC_APP_URL`.
 
-</details>
-
-<details>
-<summary><strong>Step 3: Push database schema & seed demo user</strong></summary>
-
-Push the Drizzle schema to your PostgreSQL database:
+### 3. Push Database Schema & Seed Demo User
 
 ```bash
+# Push Drizzle schema to PostgreSQL
 bun run db:push
-```
 
-*(Optional)* Seed a demo account (`test1@gmail.com` / `password`) to test login immediately:
-
-```bash
+# (Optional) Seed a demo user: test1@gmail.com / password
 bun run db:seed
 ```
 
-</details>
-
-<details>
-<summary><strong>Step 4: Run the development server</strong></summary>
+### 4. Start the Development Server
 
 ```bash
 bun run dev
@@ -120,14 +104,11 @@ bun run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-</details>
-
 ---
 
 ## Environment Variables
 
-<details>
-<summary><strong>Click to view all .env variables and what they do</strong></summary>
+All supported variables are listed in [`.env.example`](.env.example).
 
 | Variable | Required | Description |
 | :--- | :---: | :--- |
@@ -142,14 +123,11 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `CLOUDINARY_API_SECRET` | No | Cloudinary API secret. |
 | `CLOUDINARY_FOLDER` | No | Folder prefix in Cloudinary (e.g. `template`). |
 
-</details>
-
 ---
 
 ## Project Structure
 
-<details>
-<summary><strong>Click to expand full directory structure</strong></summary>
+
 
 ```text
 ├── components.json              # shadcn/ui config (base-mira, rtl: true, tsx: false)
@@ -193,82 +171,208 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
         └── storage/             # Cloudinary & local file storage helper
 ```
 
-</details>
+
 
 ---
 
 ## Built-in Functionalities & How to Use Them
 
-Expand any section below to understand what is already built and how to use or customize it:
+Expand any feature below to see how it works and how to use it in your code.
 
 <details>
 <summary><strong>1. Authentication & Session Guard</strong></summary>
 
+<br />
+
 - **What it does:** Handles registration, login, logout, password reset, and `HttpOnly` cookie sessions (`7 days` by default).
-- **Where it lives:** `src/modules/auth/`, `src/lib/auth-guard.js`, `src/app/(auth)/`.
-- **How to use it in your own pages/actions:**
-  - In a **Server Component**, call `const user = await getCurrentUser()` or `await getCurrentSession()` from `@/lib/auth-guard`.
-  - In a **Server Action**, call `const user = await requireAuth()` from `@/lib/auth-guard` to get the authenticated user's ID safely (never trust client-sent `userId`).
+- **Files:** `src/modules/auth/`, `src/lib/auth-guard.js`, `src/app/(auth)/`.
+
+**Example — Protect a Server Component page:**
+
+```jsx
+// src/app/(dashboard)/dashboard/profile/page.jsx
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth-guard";
+
+export default async function ProfilePage() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  return <h1>Welcome, {user.name}</h1>;
+}
+```
+
+**Example — Protect a Server Action:**
+
+```js
+// src/modules/posts/posts.actions.js
+"use server";
+
+import { requireAuth } from "@/lib/auth-guard";
+import { errorResponse, successResponse } from "@/lib/response";
+import { createPostService } from "./posts.service";
+
+export async function createPostAction(input) {
+  try {
+    const user = await requireAuth();
+    const data = await createPostService(user.id, input);
+    return successResponse(data);
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
+```
 
 </details>
+
+<br />
 
 <details>
 <summary><strong>2. Two-Factor Authentication (TOTP 2FA) & Recovery Codes</strong></summary>
 
-- **What it does:** Uses RFC 6238 TOTP (`src/lib/crypto.js`) so users can enable 2FA with Google Authenticator, Authy, Microsoft Authenticator, etc. Works completely offline on the phone once the setup key is added.
-- **Where it lives:** `src/lib/crypto.js`, `src/modules/auth/auth.service.js`, `src/components/settings/security-settings-form.jsx`.
-- **How to use it:**
-  - Go to **Dashboard → Settings → Security** (`/dashboard/settings/security`).
-  - Confirm your password in the security dialog.
-  - Click **Enable 2FA**, copy the setup key into your authenticator app, enter the 6-digit code, and save the 8 backup recovery codes.
-  - Disabling and re-enabling 2FA automatically generates a fresh secret key.
+<br />
+
+- **What it does:** Uses RFC 6238 **TOTP** (`src/lib/crypto.js`) compatible with Google Authenticator, Authy, Microsoft Authenticator, and 1Password. Works completely offline on the user's phone once added.
+- **Files:** `src/lib/crypto.js`, `src/modules/auth/auth.service.js`, `src/components/settings/security-settings-form.jsx`.
+
+**How to use it in the UI:**
+1. Go to **Dashboard → Settings → Security** (`/dashboard/settings/security`).
+2. Confirm your password in the security dialog.
+3. Click **Enable 2FA** to generate your **Authenticator setup key**.
+4. Copy the key into your authenticator app, enter the 6-digit code, and click **Verify & Enable**.
+5. Save the **8 backup recovery codes** shown on screen.
+
+**Example — Verify a TOTP code in backend code:**
+
+```js
+// src/modules/auth/auth.service.js
+import { generateTwoFactorSecret, verifyTotpCode } from "@/lib/crypto";
+
+// Generate a new Base32 secret key
+const secret = generateTwoFactorSecret();
+
+// Verify a 6-digit code from an Authenticator app
+const isValid = verifyTotpCode(secret, "123456");
+```
 
 </details>
+
+<br />
 
 <details>
 <summary><strong>3. Email Verification & Resend Integration</strong></summary>
 
-- **What it does:** Sends transactional emails (verification, password reset) via Resend. If `RESEND_API_KEY` is not set, it safely skips delivery without crashing.
-- **Where it lives:** `src/services/email/email.js`, `src/lib/config.js`.
-- **How to configure:**
-  - Toggle `AUTH_CONFIG.requireEmailVerification` (`true` / `false`) in `src/lib/config.js`.
-  - Add `RESEND_API_KEY` and `EMAIL_FROM` in `.env` when ready to send real emails.
-  - Call `sendEmail({ to, subject, html, text })` from `@/services/email/email` in any service.
+<br />
+
+- **What it does:** Sends transactional emails via **Resend**. If `RESEND_API_KEY` is omitted, emails are safely skipped without crashing.
+- **Files:** `src/services/email/email.js`, `src/lib/config.js`.
+
+**Example — Enable email verification in `src/lib/config.js`:**
+
+```js
+// src/lib/config.js
+export const AUTH_CONFIG = {
+  requireEmailVerification: true, // Set to false to skip verification
+  // ...
+};
+```
+
+**Example — Send a custom email from any Service:**
+
+```js
+// src/modules/orders/orders.service.js
+import { sendEmail } from "@/services/email/email";
+
+await sendEmail({
+  to: user.email,
+  subject: "Order Confirmed",
+  text: "Your order has been confirmed.",
+  html: "<p>Your order has been confirmed.</p>",
+});
+```
 
 </details>
 
-<details>
-<summary><strong>4. Profile Photo & File Storage (Cloudinary + Local Fallback)</strong></summary>
+<br />
 
-- **What it does:** Validates file type/size (`JPG`, `PNG`, `WebP`, max `2MB`) and uploads images to Cloudinary when credentials exist, or falls back to `public/uploads/` locally.
-- **Where it lives:** `src/services/storage/storage.js`, `src/lib/config.js` (`STORAGE_CONFIG`).
-- **How to use:**
-  - Configure `CLOUDINARY_*` in `.env` for cloud storage, or leave empty for local uploads during development.
-  - Use `uploadImageFile(file, folder)` and `deleteStoredFile(url)` from `@/services/storage/storage` inside your service layer.
+<details>
+<summary><strong>4. Image Upload & Storage (Cloudinary + Local Fallback)</strong></summary>
+
+<br />
+
+- **What it does:** Validates image type (`JPG`, `PNG`, `WebP`) and size (`max 2MB`), then uploads to **Cloudinary** if configured, or saves locally to `public/uploads/` if Cloudinary keys are empty.
+- **Files:** `src/services/storage/storage.js`, `src/lib/config.js`.
+
+**Example — Upload and delete images inside a Service:**
+
+```js
+// src/modules/posts/posts.service.js
+import { deleteStoredFile, uploadImageFile } from "@/services/storage/storage";
+
+// Upload an image File from FormData
+const uploaded = await uploadImageFile(file, "posts");
+// Returns: { url: "...", publicId: "..." }
+
+// Delete an existing uploaded image by URL or publicId
+await deleteStoredFile(existingPost.imageUrl);
+```
 
 </details>
 
-<details>
-<summary><strong>5. User Settings (Profile, Security, Appearance, Delete Account)</strong></summary>
+<br />
 
-- **What it does:** Complete account management — update name/email, upload/remove avatar, change password, manage 2FA, switch theme (`Light` / `Dark` / `System`), and permanently delete account.
-- **Where it lives:** `src/app/(dashboard)/dashboard/settings/`, `src/components/settings/`, `src/modules/users/`.
+<details>
+<summary><strong>5. Rate Limiting, Safe Errors & Redacted Logging</strong></summary>
+
+<br />
+
+- **What it does:** Protects login endpoints against brute-force attempts, sanitizes errors before sending to the client, and automatically redacts sensitive fields (`password`, `token`, `secret`, `email`, `apiKey`, etc.) from logs.
+- **Files:** `src/lib/config.js`, `src/lib/errors.js`, `src/lib/logger.js`.
+
+**Example — Throw safe errors and log safely:**
+
+```js
+// src/modules/posts/posts.service.js
+import { ForbiddenError, NotFoundError } from "@/lib/errors";
+import { logger } from "@/lib/logger";
+
+if (!post) {
+  throw new NotFoundError("Post not found.");
+}
+
+if (post.userId !== userId) {
+  throw new ForbiddenError("You do not have permission to edit this post.");
+}
+
+// Sensitive keys like password/token/secret are automatically replaced with [REDACTED]
+logger.info("Post updated", { userId, postId: post.id });
+```
 
 </details>
 
-<details>
-<summary><strong>6. Rate Limiting, Safe Errors & Redacted Logging</strong></summary>
-
-- **Rate Limiting:** Configured in `RATE_LIMIT_CONFIG` (`src/lib/config.js` — `5` login attempts per `15 minutes`).
-- **Safe Error Handling:** `getSafeErrorMessage(error)` in `src/lib/errors.js` converts Zod and App errors into safe client messages without leaking SQL or stack traces.
-- **Logger:** `logger` in `src/lib/logger.js` automatically redacts sensitive fields (`password`, `token`, `secret`, `email`, `apiKey`, etc.) before printing JSON logs.
-
-</details>
+<br />
 
 <details>
-<summary><strong>7. Notifications Module (Ready-to-Use Example)</strong></summary>
+<summary><strong>6. Notifications Module (Ready-to-Use Example)</strong></summary>
 
-- **What it does:** A complete 4-layer module (`src/modules/notifications/`) + Drizzle schema (`src/db/schema/notifications.js`) ready for creating, listing, and marking user notifications as read.
+<br />
+
+- **What it does:** A complete 4-layer module with Drizzle schema ready for creating, fetching, and marking user notifications as read.
+- **Files:** `src/db/schema/notifications.js`, `src/modules/notifications/`.
+
+**Example — Create a notification from any Service:**
+
+```js
+// src/modules/orders/orders.service.js
+import { createNotification } from "@/modules/notifications/notifications.repository";
+
+await createNotification({
+  userId: user.id,
+  type: "system",
+  title: "Welcome!",
+  message: "Your account is ready to use.",
+});
+```
 
 </details>
 
@@ -276,62 +380,231 @@ Expand any section below to understand what is already built and how to use or c
 
 ## How to Start Coding (Developer Guide)
 
-Follow these expandable guides to start building your own features cleanly inside this template:
+Expand each step below to see exactly where to edit and how to build new features cleanly.
 
 <details>
-<summary><strong>Where to start customizing first</strong></summary>
+<summary><strong>Step 1: Customize Branding, Homepage & Sidebar Links</strong></summary>
 
-1. **App Name & Branding:** Set `NEXT_PUBLIC_APP_NAME` in `.env`, and replace the logo images in `public/logo/` (`nextjs-icon.png` and `nextjs-icon-white.png`).
-2. **Homepage:** Edit `src/app/(common)/page.jsx` for your landing page, and `src/components/shared/navbar.jsx` / `footer.jsx` for navigation links.
-3. **Dashboard Home:** Edit `src/app/(dashboard)/dashboard/page.jsx` to replace the placeholder cards with your real widgets.
-4. **Sidebar Links:** Add your new dashboard routes to `PLATFORM_NAV` in `src/components/dashboard/dashboard-shell.jsx`.
+<br />
+
+1. **App Name:** Update `NEXT_PUBLIC_APP_NAME` in `.env`.
+2. **Logo:** Replace `public/logo/nextjs-icon.png` (light mode) and `public/logo/nextjs-icon-white.png` (dark mode).
+3. **Add a Sidebar Link in `src/components/dashboard/dashboard-shell.jsx`:**
+
+```jsx
+// src/components/dashboard/dashboard-shell.jsx
+import { FileText, LayoutGrid } from "lucide-react";
+
+const PLATFORM_NAV = [
+  { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
+  { label: "Posts", href: "/dashboard/posts", icon: FileText },
+];
+```
 
 </details>
 
+<br />
+
 <details>
-<summary><strong>How to add a new feature (Step-by-Step 4-Layer Guide)</strong></summary>
+<summary><strong>Step 2: Create a Database Schema with Drizzle ORM</strong></summary>
 
-This template uses a **4-layer function-call architecture** (no REST API routes needed for internal app features):
+<br />
 
+Create a new table file inside `src/db/schema/` and re-export it from `src/db/schema/index.js`.
+
+```js
+// src/db/schema/posts.js
+import { pgTable, serial, text, timestamp, integer } from "drizzle-orm/pg-core";
+import { users } from "./users";
+
+export const posts = pgTable("posts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+```
+
+```js
+// src/db/schema/index.js
+export * from "./users";
+export * from "./notifications";
+export * from "./posts";
+```
+
+Push the new table to Neon PostgreSQL:
+
+```bash
+bun run db:push
+```
+
+</details>
+
+<br />
+
+<details>
+<summary><strong>Step 3: Build a 4-Layer Feature Module</strong></summary>
+
+<br />
+
+Every feature in `src/modules/<feature>/` follows this flow:
 `Client Component -> Server Action -> Service -> Validation (Zod) + Repository (Drizzle) -> Database`
 
-1. **Database Schema (`src/db/schema/<feature>.js`):**
-   - Define your Drizzle table and export it from `src/db/schema/index.js`.
-   - Run `bun run db:push` to sync with Neon PostgreSQL.
-2. **Validation (`src/modules/<feature>/<feature>.validation.js`):**
-   - Write pure Zod schemas (e.g., `createPostSchema`, `postIdSchema`).
-3. **Repository (`src/modules/<feature>/<feature>.repository.js`):**
-   - Write pure Drizzle queries using `db` from `@/db/drizzle`. Never put auth or business rules here.
-4. **Service (`src/modules/<feature>/<feature>.service.js`):**
-   - Parse inputs with Zod, enforce ownership/permission checks, and call the repository.
-5. **Server Actions (`src/modules/<feature>/<feature>.actions.js`):**
-   - Start with `"use server";`, resolve the user with `await requireAuth()`, call the service, run `revalidatePath(...)`, and return `successResponse(data)` / `errorResponse(error)`.
-6. **UI Page (`src/app/(dashboard)/dashboard/<feature>/page.jsx`):**
-   - Read data in a Server Component via the Service, and handle mutations from Client Components via Server Actions.
+**A. Validation (`src/modules/posts/posts.validation.js`):**
+
+```js
+// src/modules/posts/posts.validation.js
+import { z } from "zod";
+
+export const createPostSchema = z.object({
+  title: z.string().trim().min(1, "Title is required").max(200),
+});
+```
+
+**B. Repository (`src/modules/posts/posts.repository.js`):**
+
+```js
+// src/modules/posts/posts.repository.js
+import { db } from "@/db/drizzle";
+import { posts } from "@/db/schema";
+
+export async function createPost(data) {
+  const [post] = await db.insert(posts).values(data).returning();
+  return post;
+}
+```
+
+**C. Service (`src/modules/posts/posts.service.js`):**
+
+```js
+// src/modules/posts/posts.service.js
+import * as repository from "./posts.repository";
+import { createPostSchema } from "./posts.validation";
+
+export async function createPostService(userId, input) {
+  const data = createPostSchema.parse(input);
+  return repository.createPost({ ...data, userId });
+}
+```
+
+**D. Server Action (`src/modules/posts/posts.actions.js`):**
+
+```js
+// src/modules/posts/posts.actions.js
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/lib/auth-guard";
+import { errorResponse, successResponse } from "@/lib/response";
+import { createPostService } from "./posts.service";
+
+export async function createPostAction(input) {
+  try {
+    const user = await requireAuth();
+    const post = await createPostService(user.id, input);
+    revalidatePath("/dashboard/posts");
+    return successResponse(post);
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
+```
 
 </details>
 
-<details>
-<summary><strong>How to add shadcn/ui components & loading states</strong></summary>
+<br />
 
-- **Install any shadcn/ui component:**
-  ```bash
-  bunx shadcn@latest add <component-name>
-  ```
-- **Loading States Convention:**
-  - Inside buttons and action triggers, use `<Spinner />` (`@/components/ui/spinner`) instead of plain `"Loading..."` text.
-  - For page/card placeholders (`loading.jsx` or `<Suspense>` fallbacks), use `<Skeleton />` (`@/components/ui/skeleton`).
-- **Forms:** Wrap auth/multi-step forms cleanly so inputs and state reset on submission and navigation.
-- **RTL Support:** `components.json` has `rtl: true` — use Tailwind logical properties (`ps-`, `pe-`, `ms-`, `me-`, `start-`, `end-`) instead of `pl-`, `pr-`, `ml-`, `mr-`.
+<details>
+<summary><strong>Step 4: Build the UI Page with shadcn/ui & Loading States</strong></summary>
+
+<br />
+
+Install any extra shadcn/ui component you need:
+
+```bash
+bunx shadcn@latest add table select
+```
+
+**Example — Client Form with `<Spinner />` and `toast`:**
+
+```jsx
+// src/components/posts/create-post-form.jsx
+"use client";
+
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
+import { createPostAction } from "@/modules/posts/posts.actions";
+
+export function CreatePostForm() {
+  const [title, setTitle] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    startTransition(async () => {
+      const res = await createPostAction({ title });
+      if (!res.success) {
+        toast.error(res.message);
+        return;
+      }
+      setTitle("");
+      toast.success("Post created!");
+    });
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="post-title">Title</Label>
+        <Input
+          id="post-title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          disabled={isPending}
+          required
+        />
+      </div>
+
+      <Button type="submit" disabled={isPending}>
+        {isPending ? <Spinner /> : null}
+        Create post
+      </Button>
+    </form>
+  );
+}
+```
+
+**Example — Route Loading Page with `<Skeleton />`:**
+
+```jsx
+// src/app/(dashboard)/dashboard/posts/loading.jsx
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export default function PostsLoading() {
+  return (
+    <Card className="p-6">
+      <div className="space-y-3">
+        <Skeleton className="h-6 w-40" />
+        <Skeleton className="h-9 w-full" />
+        <Skeleton className="h-9 w-28" />
+      </div>
+    </Card>
+  );
+}
+```
 
 </details>
 
 ---
 
 ## Available Scripts
-
-<details>
-<summary><strong>Click to view all npm/bun scripts</strong></summary>
 
 | Command | Description |
 | :--- | :--- |
@@ -346,14 +619,9 @@ This template uses a **4-layer function-call architecture** (no REST API routes 
 | `bun run db:seed` | Seed a demo user (`test1@gmail.com`) |
 | `bun run db:test` | Test the PostgreSQL database connection |
 
-</details>
-
 ---
 
 ## Deployment
-
-<details>
-<summary><strong>Click to view deployment steps (Vercel / Node.js)</strong></summary>
 
 1. Add your environment variables (`NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_URL`, `DATABASE_URL`, `DATABASE_URL_POOLED`, and optional `RESEND_API_KEY` / `CLOUDINARY_*`) in your hosting provider (e.g., **Vercel**).
 2. Push your schema to your production Neon database:
@@ -364,5 +632,3 @@ This template uses a **4-layer function-call architecture** (no REST API routes 
    ```bash
    bun run build && bun run start
    ```
-
-</details>
