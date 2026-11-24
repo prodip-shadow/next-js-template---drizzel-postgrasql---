@@ -1,6 +1,7 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
-import { and, eq, gt } from "drizzle-orm";
-import { db, schema } from "@/db/drizzle";
+import { connection } from "next/server";
+import { findActiveSessionWithUser } from "@/modules/auth/auth.repository";
 import { AUTH_CONFIG } from "./config";
 import { hashToken } from "./crypto";
 import { ForbiddenError, UnauthorizedError } from "./errors";
@@ -36,28 +37,14 @@ export async function clearSessionCookie() {
   cookieStore.delete(AUTH_CONFIG.sessionCookieName);
 }
 
-export async function getCurrentSession() {
+export const getCurrentSession = cache(async function getCurrentSession() {
+  await connection();
   const cookieStore = await cookies();
   const rawToken = cookieStore.get(AUTH_CONFIG.sessionCookieName)?.value;
   if (!rawToken) return null;
 
   const tokenHash = hashToken(rawToken);
-  const now = new Date();
-
-  const [row] = await db
-    .select({
-      session: schema.sessions,
-      user: schema.users,
-    })
-    .from(schema.sessions)
-    .innerJoin(schema.users, eq(schema.sessions.userId, schema.users.id))
-    .where(
-      and(
-        eq(schema.sessions.tokenHash, tokenHash),
-        gt(schema.sessions.expiresAt, now)
-      )
-    )
-    .limit(1);
+  const row = await findActiveSessionWithUser(tokenHash, new Date());
 
   if (!row || row.user.status !== "active") {
     return null;
@@ -66,8 +53,14 @@ export async function getCurrentSession() {
   return {
     session: row.session,
     user: toSafeUser(row.user),
+    settings: row.settings || {
+      theme: "system",
+      language: "en",
+      emailNotifications: true,
+    },
+    isPasswordConfirmed: isSessionPasswordConfirmed(row.session),
   };
-}
+});
 
 export async function getCurrentUser() {
   const current = await getCurrentSession();
@@ -85,6 +78,14 @@ export async function requireAuth() {
   }
 
   return current;
+}
+
+export function isSessionPasswordConfirmed(session) {
+  if (!session?.lastConfirmedAt) return false;
+  return (
+    Date.now() - session.lastConfirmedAt.getTime() <=
+    AUTH_CONFIG.passwordConfirmationDurationMs
+  );
 }
 
 export async function requireConfirmedPassword() {

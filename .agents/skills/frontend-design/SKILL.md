@@ -32,6 +32,9 @@ Never invent frontend fields, states, or actions that do not exist in or align w
 - **Server Components by default:** Use Server Components in `src/app/` and call Service functions directly for reads. Add `"use client"` only when client interactivity or React hooks are required.
 - **JavaScript/JSX only:** Write `.jsx` for components (`.js` for logic); never use TypeScript.
 - **Preserve routing:** Keep `(auth)`, `(common)`, and `(dashboard)` route groups intact (`src/app/(common)/page.jsx` serves `/`).
+- **Component-based loading states:** Never use plain text like `"Loading..."`, `"Saving..."`, or `"Uploading..."` for loading states. Always use shadcn/ui components:
+  - Use `<Spinner />` (`@/components/ui/spinner`) for circular loading indicators inside buttons, menu items, and inline actions.
+  - Use `<Skeleton />` (`@/components/ui/skeleton`) for card, list, and page-level loading placeholders (`loading.jsx` and `<Suspense>` fallbacks).
 
 ## 4. Ask When Uncertain or Blocked
 

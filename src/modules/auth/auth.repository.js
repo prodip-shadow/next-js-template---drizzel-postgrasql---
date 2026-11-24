@@ -98,6 +98,30 @@ export async function createSession({
   return session;
 }
 
+export async function findActiveSessionWithUser(tokenHash, now = new Date()) {
+  const [row] = await db
+    .select({
+      session: schema.sessions,
+      user: schema.users,
+      settings: schema.userSettings,
+    })
+    .from(schema.sessions)
+    .innerJoin(schema.users, eq(schema.sessions.userId, schema.users.id))
+    .leftJoin(
+      schema.userSettings,
+      eq(schema.userSettings.userId, schema.users.id)
+    )
+    .where(
+      and(
+        eq(schema.sessions.tokenHash, tokenHash),
+        gt(schema.sessions.expiresAt, now)
+      )
+    )
+    .limit(1);
+
+  return row || null;
+}
+
 export async function deleteSessionByTokenHash(tokenHash) {
   await db.delete(schema.sessions).where(eq(schema.sessions.tokenHash, tokenHash));
 }

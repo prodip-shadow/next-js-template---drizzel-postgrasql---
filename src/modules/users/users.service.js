@@ -18,10 +18,12 @@ import {
 } from "./users.validation";
 
 export async function getProfileService(userId) {
-  const user = await repository.findUserById(userId);
+  const [user, settings] = await Promise.all([
+    repository.findUserById(userId),
+    repository.findUserSettings(userId),
+  ]);
   if (!user) throw new NotFoundError("User not found.");
 
-  const settings = await repository.findUserSettings(userId);
   return {
     user: toSafeUser(user),
     settings: settings || {

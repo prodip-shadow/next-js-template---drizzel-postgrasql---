@@ -1,5 +1,5 @@
 export const APP_CONFIG = {
-  name: process.env.NEXT_PUBLIC_APP_NAME || "Scout Website",
+  name: process.env.NEXT_PUBLIC_APP_NAME || "Next JS Template",
   url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
 };
 
@@ -16,7 +16,7 @@ export const AUTH_CONFIG = {
   passwordConfirmationDurationMs: 15 * 60 * 1000, // 15 minutes
   emailVerificationTokenDurationMs: 24 * 60 * 60 * 1000, // 24 hours
   passwordResetTokenDurationMs: 60 * 60 * 1000, // 1 hour
-  twoFactorIssuer: process.env.NEXT_PUBLIC_APP_NAME || "Scout Website",
+  twoFactorIssuer: process.env.NEXT_PUBLIC_APP_NAME || "Next JS Template",
 };
 
 export const RATE_LIMIT_CONFIG = {
@@ -29,7 +29,7 @@ export const STORAGE_CONFIG = {
   uploadDir: "public/uploads",
   publicPrefix: "/uploads",
   defaultFolder: "avatars",
-  cloudinaryFolderPrefix: process.env.CLOUDINARY_FOLDER || "scout-website",
+  cloudinaryFolderPrefix: process.env.CLOUDINARY_FOLDER || "template",
   maxImageSizeBytes: 2 * 1024 * 1024, // 2 MB
   allowedImageMimeTypes: ["image/jpeg", "image/png", "image/webp"],
 };
